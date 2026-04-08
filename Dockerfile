@@ -21,7 +21,7 @@ COPY server/__init__.py           ./server/__init__.py
 COPY inference.py   .
 COPY openenv.yaml   .
 
-RUN pip install --no-cache-dir -e .
+ENV PYTHONPATH=/app
 
 EXPOSE 8000
 
