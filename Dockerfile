@@ -7,7 +7,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --upgrade pip setuptools && \
+    pip install --no-cache-dir -r requirements.txt
 
 COPY pyproject.toml .
 COPY server/grader.py             ./server/grader.py
