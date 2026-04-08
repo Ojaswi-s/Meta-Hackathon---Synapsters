@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "<string>", line 4, in <module>
+    from meeting_env.server.app import app
+  File "E:\Meta hackethon\meeting_env\server\app.py", line 10, in <module>
+    app = create_fastapi_app(env, MeetingAction, MeetingObservation)
+  File "C:\Python314\Lib\site-packages\openenv\core\env_server\http_server.py", line 1638, in create_fastapi_app
+    server = HTTPEnvServer(
+        env,
+    ...<3 lines>...
+        concurrency_config=concurrency_config,
+    )
+  File "C:\Python314\Lib\site-packages\openenv\core\env_server\http_server.py", line 174, in __init__
+    raise TypeError(
+    ...<2 lines>...
+    )
+TypeError: env must be a callable (class or factory function), got <class 'meeting_env.server.meeting_environment.MeetingEnvironment'>. Pass the environment class (e.g., MyEnvironment) not an instance (e.g., MyEnvironment()).

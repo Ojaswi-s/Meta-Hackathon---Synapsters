@@ -1,0 +1,162 @@
+============================= test session starts =============================
+platform win32 -- Python 3.14.0, pytest-9.0.3, pluggy-1.6.0 -- C:\Python314\python.exe
+cachedir: .pytest_cache
+rootdir: E:\Meta hackethon
+configfile: pyproject.toml
+plugins: anyio-4.12.1
+collecting ... collected 24 items
+
+tests/test_meeting_env.py::TestOwnerMatching::test_exact_match PASSED    [  4%]
+tests/test_meeting_env.py::TestOwnerMatching::test_first_name_match PASSED [  8%]
+tests/test_meeting_env.py::TestOwnerMatching::test_wrong_owner PASSED    [ 12%]
+tests/test_meeting_env.py::TestOwnerMatching::test_partial_match_role PASSED [ 16%]
+tests/test_meeting_env.py::TestKeywordScore::test_all_keywords_present PASSED [ 20%]
+tests/test_meeting_env.py::TestKeywordScore::test_partial_keywords PASSED [ 25%]
+tests/test_meeting_env.py::TestKeywordScore::test_no_keywords PASSED     [ 29%]
+tests/test_meeting_env.py::TestKeywordScore::test_empty_keywords PASSED  [ 33%]
+tests/test_meeting_env.py::TestGrader::test_perfect_submission PASSED    [ 37%]
+tests/test_meeting_env.py::TestGrader::test_empty_submission PASSED      [ 41%]
+tests/test_meeting_env.py::TestGrader::test_wrong_owner_scores_zero PASSED [ 45%]
+tests/test_meeting_env.py::TestGrader::test_partial_credit_missing_deadline PASSED [ 50%]
+tests/test_meeting_env.py::TestGrader::test_score_range PASSED           [ 54%]
+tests/test_meeting_env.py::TestGrader::test_deterministic PASSED         [ 58%]
+tests/test_meeting_env.py::TestTasks::test_all_tasks_present PASSED      [ 62%]
+tests/test_meeting_env.py::TestTasks::test_ground_truth_has_required_fields PASSED [ 66%]
+tests/test_meeting_env.py::TestTasks::test_transcripts_are_non_empty PASSED [ 70%]
+tests/test_meeting_env.py::TestTasks::test_difficulty_progression PASSED [ 75%]
+tests/test_meeting_env.py::TestEnvironmentLogic::test_reset_returns_observation PASSED [ 79%]
+tests/test_meeting_env.py::TestEnvironmentLogic::test_reset_clears_state FAILED [ 83%]
+tests/test_meeting_env.py::TestEnvironmentLogic::test_step_increments_counter FAILED [ 87%]
+tests/test_meeting_env.py::TestEnvironmentLogic::test_is_final_ends_episode FAILED [ 91%]
+tests/test_meeting_env.py::TestEnvironmentLogic::test_reward_is_non_negative FAILED [ 95%]
+tests/test_meeting_env.py::TestEnvironmentLogic::test_good_submission_scores_high PASSED [100%]
+
+================================== FAILURES ===================================
+________________ TestEnvironmentLogic.test_reset_clears_state _________________
+
+self = <tests.test_meeting_env.TestEnvironmentLogic object at 0x00000218B488BC50>
+
+    def test_reset_clears_state(self):
+        self.env.reset("easy")
+        from server.models import MeetingAction, ExtractedActionItem
+        action = MeetingAction(action_items=[], is_final=False)
+>       self.env.step(action)
+
+tests\test_meeting_env.py:165: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+server\meeting_environment.py:139: in step
+    feedback = generate_feedback(details, MAX_STEPS, self._state.step_count)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+details = {'f1': 0.0, 'matched': [], 'precision': 0.0, 'recall': 0.0}
+max_steps = 5, step = 1
+
+    def generate_feedback(details: Dict[str, Any], max_steps: int, step: int) -> str:
+        """
+        Generate non-answer feedback for the agent based on grading details.
+        Helpful signal without revealing the ground truth directly.
+        """
+>       found = details["items_found"]
+                ^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'items_found'
+
+server\grader.py:182: KeyError
+______________ TestEnvironmentLogic.test_step_increments_counter ______________
+
+self = <tests.test_meeting_env.TestEnvironmentLogic object at 0x00000218B49B0180>
+
+    def test_step_increments_counter(self):
+        self.env.reset("easy")
+        from server.models import MeetingAction
+        action = MeetingAction(action_items=[], is_final=False)
+>       self.env.step(action)
+
+tests\test_meeting_env.py:176: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+server\meeting_environment.py:139: in step
+    feedback = generate_feedback(details, MAX_STEPS, self._state.step_count)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+details = {'f1': 0.0, 'matched': [], 'precision': 0.0, 'recall': 0.0}
+max_steps = 5, step = 1
+
+    def generate_feedback(details: Dict[str, Any], max_steps: int, step: int) -> str:
+        """
+        Generate non-answer feedback for the agent based on grading details.
+        Helpful signal without revealing the ground truth directly.
+        """
+>       found = details["items_found"]
+                ^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'items_found'
+
+server\grader.py:182: KeyError
+_______________ TestEnvironmentLogic.test_is_final_ends_episode _______________
+
+self = <tests.test_meeting_env.TestEnvironmentLogic object at 0x00000218B49B02B0>
+
+    def test_is_final_ends_episode(self):
+        self.env.reset("easy")
+        from server.models import MeetingAction
+        action = MeetingAction(action_items=[], is_final=True)
+>       obs = self.env.step(action)
+              ^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_meeting_env.py:185: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+server\meeting_environment.py:139: in step
+    feedback = generate_feedback(details, MAX_STEPS, self._state.step_count)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+details = {'f1': 0.0, 'matched': [], 'precision': 0.0, 'recall': 0.0}
+max_steps = 5, step = 1
+
+    def generate_feedback(details: Dict[str, Any], max_steps: int, step: int) -> str:
+        """
+        Generate non-answer feedback for the agent based on grading details.
+        Helpful signal without revealing the ground truth directly.
+        """
+>       found = details["items_found"]
+                ^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'items_found'
+
+server\grader.py:182: KeyError
+______________ TestEnvironmentLogic.test_reward_is_non_negative _______________
+
+self = <tests.test_meeting_env.TestEnvironmentLogic object at 0x00000218B4959370>
+
+    def test_reward_is_non_negative(self):
+        self.env.reset("easy")
+        from server.models import MeetingAction
+        action = MeetingAction(action_items=[], is_final=True)
+>       obs = self.env.step(action)
+              ^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_meeting_env.py:192: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+server\meeting_environment.py:139: in step
+    feedback = generate_feedback(details, MAX_STEPS, self._state.step_count)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+details = {'f1': 0.0, 'matched': [], 'precision': 0.0, 'recall': 0.0}
+max_steps = 5, step = 1
+
+    def generate_feedback(details: Dict[str, Any], max_steps: int, step: int) -> str:
+        """
+        Generate non-answer feedback for the agent based on grading details.
+        Helpful signal without revealing the ground truth directly.
+        """
+>       found = details["items_found"]
+                ^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'items_found'
+
+server\grader.py:182: KeyError
+=========================== short test summary info ===========================
+FAILED tests/test_meeting_env.py::TestEnvironmentLogic::test_reset_clears_state - KeyError: 'items_found'
+FAILED tests/test_meeting_env.py::TestEnvironmentLogic::test_step_increments_counter - KeyError: 'items_found'
+FAILED tests/test_meeting_env.py::TestEnvironmentLogic::test_is_final_ends_episode - KeyError: 'items_found'
+FAILED tests/test_meeting_env.py::TestEnvironmentLogic::test_reward_is_non_negative - KeyError: 'items_found'
+======================== 4 failed, 20 passed in 4.64s =========================

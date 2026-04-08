@@ -1,0 +1,79 @@
+spec_version: 1
+name: meeting-notes-env
+description: >
+  Meeting Notes Action Item Extraction environment.
+  Agents extract structured action items (owner, task, deadline, priority)
+  from realistic meeting transcripts with increasing difficulty.
+type: standard
+version: 0.1.0
+tags:
+  - openenv
+  - nlp
+  - information-extraction
+  - productivity
+  - real-world
+
+runtime:
+  app: server.app:app
+  port: 8000
+
+tasks:
+  - id: easy
+    name: Explicit actions — product standup
+    description: >
+      5 action items explicitly stated in a product team standup.
+      Actions are clearly assigned with owner, task, and deadline.
+    difficulty: easy
+    max_steps: 5
+
+  - id: medium
+    name: Implicit actions — strategy session
+    description: >
+      6 action items implied through discussion rather than explicitly stated.
+      Ownership and deadlines must be inferred from context.
+    difficulty: medium
+    max_steps: 5
+
+  - id: hard
+    name: Conflicting assignments — engineering planning
+    description: >
+      5 action items where ownership conflicts arise during the meeting.
+      Two participants appear to accept the same task; agent must resolve
+      the conflict based on the final state of the conversation.
+    difficulty: hard
+    max_steps: 5
+
+action_space:
+  type: structured
+  schema:
+    action_items:
+      type: array
+      items:
+        owner: string
+        task: string
+        deadline: string (optional)
+        priority: "high" | "medium" | "low"
+    is_final: boolean
+    reasoning: string (optional)
+
+observation_space:
+  type: structured
+  schema:
+    transcript: string
+    task_description: string
+    step_feedback: string (optional)
+    items_found_count: integer
+    total_items_in_task: integer
+    current_f1: float
+    done: boolean
+    reward: float (optional)
+    step_count: integer
+    steps_remaining: integer
+
+reward:
+  type: continuous
+  range: [0.0, 1.5]
+  description: >
+    Blend of average item quality score (70%) and F1 over ground truth set (30%),
+    plus an improvement bonus for beating the previous best score,
+    minus a small step cost to encourage efficient extraction.
