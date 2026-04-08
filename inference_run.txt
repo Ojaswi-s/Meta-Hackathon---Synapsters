@@ -1,0 +1,103 @@
+Meeting Notes Action Item Extraction ù Baseline Inference
+Model:    meta-llama/Llama-3.3-70B-Instruct
+Env URL:  http://localhost:8000
+API URL:  https://router.huggingface.co/v1
+
+============================================================
+Task: EASY
+============================================================
+Transcript length: 988 chars
+Total items to find: 5
+
+  Step 1/3
+  Agent extracted 5 items
+  Reward: 1.1453 | F1: 1.0000 | Found: 5/5
+  Feedback: Score: 0.90 | Found 5/5 items (0 still missing) | F1: 1.00 | Avg item quality: 0.85 | Steps remaining: 4
+Hint: Strong extraction. Double-check you haven't over-extracted ù remove any items without a clear owner or a genuine commitment to act.
+
+  Step 2/3
+  Agent extracted 5 items
+  Reward: 0.8764 | F1: 1.0000 | Found: 5/5
+  Feedback: Score: 0.90 | Found 5/5 items (0 still missing) | F1: 1.00 | Avg item quality: 0.85 | Steps remaining: 3
+Hint: Strong extraction. Double-check you haven't over-extracted ù remove any items without a clear owner or a genuine commitment to act.
+
+  Step 3/3
+  Agent extracted 5 items
+  Reward: 0.8764 | F1: 1.0000 | Found: 5/5
+  Feedback: Score: 0.90 | Found 5/5 items (0 still missing) | F1: 1.00 | Avg item quality: 0.85 | Steps remaining: 2
+Hint: Strong extraction. Double-check you haven't over-extracted ù remove any items without a clear owner or a genuine commitment to act.
+Only 2 steps remaining ù consider finalising soon.
+
+  Final best F1: 0.8964
+  Total reward: 2.8981
+
+============================================================
+Task: MEDIUM
+============================================================
+Transcript length: 1492 chars
+Total items to find: 6
+
+  Step 1/3
+  Agent extracted 6 items
+  Reward: 0.9709 | F1: 0.8333 | Found: 5/6
+  Feedback: Score: 0.76 | Found 5/6 items (1 still missing) | F1: 0.83 | Avg item quality: 0.73 | Steps remaining: 4
+Hint: Good progress. Verify deadlines and priorities for the items you have, and check whether any implicit commitments were overlooked.
+
+  Step 2/3
+  Agent extracted 6 items
+  Reward: 0.7422 | F1: 0.8333 | Found: 5/6
+  Feedback: Score: 0.76 | Found 5/6 items (1 still missing) | F1: 0.83 | Avg item quality: 0.73 | Steps remaining: 3
+Hint: Good progress. Verify deadlines and priorities for the items you have, and check whether any implicit commitments were overlooked.
+
+  Step 3/3
+  Agent extracted 6 items
+  Reward: 0.7422 | F1: 0.8333 | Found: 5/6
+  Feedback: Score: 0.76 | Found 5/6 items (1 still missing) | F1: 0.83 | Avg item quality: 0.73 | Steps remaining: 2
+Hint: Good progress. Verify deadlines and priorities for the items you have, and check whether any implicit commitments were overlooked.
+Only 2 steps remaining ù consider finalising soon.
+
+  Final best F1: 0.7622
+  Total reward: 2.4553
+
+============================================================
+Task: HARD
+============================================================
+Transcript length: 1460 chars
+Total items to find: 5
+
+  Step 1/3
+  Agent extracted 5 items
+  Reward: 0.9242 | F1: 0.8000 | Found: 4/5
+  Feedback: Score: 0.73 | Found 4/5 items (1 still missing) | F1: 0.80 | Avg item quality: 0.69 | Steps remaining: 4
+Hint: Good progress. Verify deadlines and priorities for the items you have, and check whether any implicit commitments were overlooked.
+
+  Step 2/3
+  Agent extracted 5 items
+  Reward: 0.7063 | F1: 0.8000 | Found: 4/5
+  Feedback: Score: 0.73 | Found 4/5 items (1 still missing) | F1: 0.80 | Avg item quality: 0.69 | Steps remaining: 3
+Hint: Good progress. Verify deadlines and priorities for the items you have, and check whether any implicit commitments were overlooked.
+
+  Step 3/3
+  Agent extracted 5 items
+  Reward: 0.7063 | F1: 0.8000 | Found: 4/5
+  Feedback: Score: 0.73 | Found 4/5 items (1 still missing) | F1: 0.80 | Avg item quality: 0.69 | Steps remaining: 2
+Hint: Good progress. Verify deadlines and priorities for the items you have, and check whether any implicit commitments were overlooked.
+Only 2 steps remaining ù consider finalising soon.
+
+  Final best F1: 0.7263
+  Total reward: 2.3368
+
+============================================================
+BASELINE RESULTS SUMMARY
+============================================================
+Task       Best F1      Total Reward    Steps
+--------------------------------------------------
+easy       0.8964       2.8981          3
+medium     0.7622       2.4553          3
+hard       0.7263       2.3368          3
+--------------------------------------------------
+AVERAGE    0.7950       7.6902         
+
+Total runtime: 19.1s
+
+Results saved to baseline_results.json

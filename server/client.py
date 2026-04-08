@@ -47,7 +47,6 @@ class MeetingEnv(EnvClient[MeetingAction, MeetingObservation, MeetingState]):
             observation=obs,
             reward=payload.get("reward"),
             done=payload.get("done", False),
-            info=payload.get("info", {}),
         )
 
     def _parse_state(self, payload: dict) -> MeetingState:

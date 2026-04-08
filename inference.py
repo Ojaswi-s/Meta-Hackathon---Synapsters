@@ -157,9 +157,10 @@ def run_task(client: OpenAI, env_client, task_id: str) -> Dict[str, Any]:
     final_f1 = 0.0
     final_score = 0.0
     previous_feedback = None
+    done = False  # track done from obs, not result (reset() wraps differently)
 
     for step in range(MAX_STEPS):
-        if result.done:
+        if done:
             break
 
         print(f"\n  Step {step + 1}/{MAX_STEPS}")
@@ -199,6 +200,7 @@ def run_task(client: OpenAI, env_client, task_id: str) -> Dict[str, Any]:
             print(f"  [ERROR] Environment step {step + 1} failed: {exc}")
             break
         obs = result.observation
+        done = getattr(obs, 'done', False) or getattr(result, 'done', False)
 
         reward = result.reward or 0.0
         episode_rewards.append(reward)
@@ -211,7 +213,7 @@ def run_task(client: OpenAI, env_client, task_id: str) -> Dict[str, Any]:
         if obs.step_feedback:
             print(f"  Feedback: {obs.step_feedback}")
 
-        if obs.done:
+        if done:
             break
 
     state = env_client.state()
