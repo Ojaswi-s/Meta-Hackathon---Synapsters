@@ -37,3 +37,7 @@ Thumbs.db
 
 # Docker build cache
 *.dockerignore
+node_modules/
+.env
+dist/
+build/
