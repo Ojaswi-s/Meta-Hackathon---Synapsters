@@ -134,6 +134,7 @@ MEETING TRANSCRIPT:
 
 def run_task(client: OpenAI, env_client, task_id: str) -> Dict[str, Any]:
     """Run a single task episode and return results."""
+    print(f"[START] task={task_id}", flush=True)
     print(f"\n{'='*60}")
     print(f"Task: {task_id.upper()}")
     print(f"{'='*60}")
@@ -213,12 +214,16 @@ def run_task(client: OpenAI, env_client, task_id: str) -> Dict[str, Any]:
         if obs.step_feedback:
             print(f"  Feedback: {obs.step_feedback}")
 
+        print(f"[STEP] step={step + 1} reward={reward}", flush=True)
+
         if done:
             break
 
     state = env_client.state()
     print(f"\n  Final best F1: {state.best_f1:.4f}")
     print(f"  Total reward: {sum(episode_rewards):.4f}")
+
+    print(f"[END] task={task_id} score={state.best_f1} steps={state.step_count}", flush=True)
 
     return {
         "task_id": task_id,
