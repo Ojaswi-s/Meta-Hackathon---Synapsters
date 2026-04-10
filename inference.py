@@ -19,7 +19,12 @@ Expected runtime: < 5 minutes on all 3 tasks.
 import os
 import json
 import time
+import sys
+import functools
 from typing import List, Dict, Any, Optional
+
+# Force all print statements to flush immediately, preventing validator log truncation
+print = functools.partial(print, flush=True)
 
 from openai import OpenAI
 from server.models import MeetingAction, ExtractedActionItem
@@ -134,103 +139,116 @@ MEETING TRANSCRIPT:
 
 def run_task(client: OpenAI, env_client, task_id: str) -> Dict[str, Any]:
     """Run a single task episode and return results."""
-    print(f"[START] task={task_id}", flush=True)
+    print(f"[START] task={task_id}")
     print(f"\n{'='*60}")
     print(f"Task: {task_id.upper()}")
     print(f"{'='*60}")
 
-    # Reset environment
-    try:
-        result = env_client.reset(task_id=task_id)
-    except Exception as exc:
-        print(f"  [ERROR] Could not reset environment for task '{task_id}': {exc}")
-        print(f"  Ensure the server is running at: {ENV_BASE_URL}")
-        return {
-            "task_id": task_id, "final_f1": 0.0, "best_f1": 0.0,
-            "total_reward": 0.0, "steps_taken": 0, "rewards_per_step": [],
-        }
-    obs = result.observation
-
-    print(f"Transcript length: {len(obs.transcript)} chars")
-    print(f"Total items to find: {obs.total_items_in_task}")
-
     episode_rewards = []
     final_f1 = 0.0
     final_score = 0.0
-    previous_feedback = None
-    done = False  # track done from obs, not result (reset() wraps differently)
-
-    for step in range(MAX_STEPS):
-        if done:
-            break
-
-        print(f"\n  Step {step + 1}/{MAX_STEPS}")
-
-        # Get LLM response
-        action_data = call_llm(
-            client=client,
-            transcript=obs.transcript,
-            task_description=obs.task_description,
-            previous_feedback=previous_feedback,
-            step=step,
-            max_steps=MAX_STEPS,
-        )
-
-        items = action_data.get("action_items", [])
-        print(f"  Agent extracted {len(items)} items")
-
-        # Build action
-        action = MeetingAction(
-            action_items=[
-                ExtractedActionItem(
-                    owner=item.get("owner", ""),
-                    task=item.get("task", ""),
-                    deadline=item.get("deadline"),
-                    priority=item.get("priority", "medium"),
-                )
-                for item in items
-            ],
-            is_final=action_data.get("is_final", False),
-            reasoning=action_data.get("reasoning"),
-        )
-
-        # Step environment
+    
+    try:
+        # Reset environment
         try:
-            result = env_client.step(action)
+            result = env_client.reset(task_id=task_id)
         except Exception as exc:
-            print(f"  [ERROR] Environment step {step + 1} failed: {exc}")
-            break
+            print(f"  [ERROR] Could not reset environment for task '{task_id}': {exc}")
+            print(f"  Ensure the server is running at: {ENV_BASE_URL}")
+            return {
+                "task_id": task_id, "final_f1": 0.0, "best_f1": 0.0,
+                "total_reward": 0.0, "steps_taken": 0, "rewards_per_step": [],
+            }
         obs = result.observation
-        done = getattr(obs, 'done', False) or getattr(result, 'done', False)
 
-        reward = result.reward or 0.0
-        episode_rewards.append(reward)
-        final_f1 = obs.current_f1
-        final_score = reward
-        previous_feedback = obs.step_feedback
+        print(f"Transcript length: {len(obs.transcript)} chars")
+        print(f"Total items to find: {obs.total_items_in_task}")
 
-        print(f"  Reward: {reward:.4f} | F1: {obs.current_f1:.4f} | "
-              f"Found: {obs.items_found_count}/{obs.total_items_in_task}")
-        if obs.step_feedback:
-            print(f"  Feedback: {obs.step_feedback}")
+        previous_feedback = None
+        done = False  # track done from obs, not result (reset() wraps differently)
 
-        print(f"[STEP] step={step + 1} reward={reward}", flush=True)
+        for step in range(MAX_STEPS):
+            if done:
+                break
 
-        if done:
-            break
+            print(f"\n  Step {step + 1}/{MAX_STEPS}")
 
-    state = env_client.state()
-    print(f"\n  Final best F1: {state.best_f1:.4f}")
-    print(f"  Total reward: {sum(episode_rewards):.4f}")
+            try:
+                # Get LLM response
+                action_data = call_llm(
+                    client=client,
+                    transcript=obs.transcript,
+                    task_description=obs.task_description,
+                    previous_feedback=previous_feedback,
+                    step=step,
+                    max_steps=MAX_STEPS,
+                )
+            except Exception as e:
+                print(f"  [ERROR] LLM call failed: {e}")
+                break
 
-    print(f"[END] task={task_id} score={state.best_f1} steps={state.step_count}", flush=True)
+            items = action_data.get("action_items", [])
+            print(f"  Agent extracted {len(items)} items")
+
+            # Build action
+            action = MeetingAction(
+                action_items=[
+                    ExtractedActionItem(
+                        owner=item.get("owner", ""),
+                        task=item.get("task", ""),
+                        deadline=item.get("deadline"),
+                        priority=item.get("priority", "medium"),
+                    )
+                    for item in items
+                ],
+                is_final=action_data.get("is_final", False),
+                reasoning=action_data.get("reasoning"),
+            )
+
+            # Step environment
+            try:
+                result = env_client.step(action)
+            except Exception as exc:
+                print(f"  [ERROR] Environment step {step + 1} failed: {exc}")
+                break
+            obs = result.observation
+            done = getattr(obs, 'done', False) or getattr(result, 'done', False)
+
+            reward = result.reward or 0.0
+            episode_rewards.append(reward)
+            final_f1 = obs.current_f1
+            final_score = reward
+            previous_feedback = obs.step_feedback
+
+            print(f"  Reward: {reward:.4f} | F1: {obs.current_f1:.4f} | "
+                  f"Found: {obs.items_found_count}/{obs.total_items_in_task}")
+            if obs.step_feedback:
+                print(f"  Feedback: {obs.step_feedback}")
+
+            print(f"[STEP] step={step + 1} reward={reward}")
+
+            if done:
+                break
+    finally:
+        try:
+            state = env_client.state()
+            best_f1 = state.best_f1
+            steps_taken = state.step_count
+        except Exception:
+            best_f1 = 0.0
+            steps_taken = len(episode_rewards)
+            
+        print(f"\n  Final best F1: {best_f1:.4f}")
+        print(f"  Total reward: {sum(episode_rewards):.4f}")
+
+        print(f"[END] task={task_id} score={best_f1} steps={steps_taken}")
 
     return {
         "task_id": task_id,
         "final_f1": final_f1,
-        "best_f1": state.best_f1,
+        "best_f1": best_f1,
         "total_reward": sum(episode_rewards),
-        "steps_taken": state.step_count,
+        "steps_taken": steps_taken,
         "rewards_per_step": episode_rewards,
     }
 
@@ -275,6 +293,10 @@ def main():
 
     if not connected:
         print("Exiting gracefully due to connection failure.")
+        # Print fallback blocks to satisfy the validator parser and let us see the logs!
+        for task_id in TASK_IDS:
+            print(f"[START] task={task_id}")
+            print(f"[END] task={task_id} score=0.0 steps=0")
         return {"error": "Failed to connect to environment server"}
 
     elapsed = time.time() - start_time
