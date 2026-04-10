@@ -29,7 +29,7 @@ from server.client import MeetingEnv
 API_BASE_URL = os.environ.get("API_BASE_URL", "https://router.huggingface.co/v1")
 API_KEY = os.environ.get("HF_TOKEN") or os.environ.get("API_KEY", "")
 MODEL_NAME = os.environ.get("MODEL_NAME", "meta-llama/Llama-3.3-70B-Instruct")
-ENV_BASE_URL = os.environ.get("ENV_BASE_URL", "http://localhost:8000")
+ENV_BASE_URL = os.environ.get("ENV_BASE_URL", "http://localhost:7860")
 
 # ── Inference config ──────────────────────────────────────────────────────────
 MAX_STEPS = 3          # Max refinement steps per task

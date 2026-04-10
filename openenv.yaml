@@ -15,7 +15,7 @@ tags:
 
 runtime:
   app: server.app:app
-  port: 8000
+  port: 7860
 
 tasks:
   - id: easy
