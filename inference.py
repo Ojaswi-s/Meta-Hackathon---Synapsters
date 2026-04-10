@@ -241,17 +241,17 @@ def main():
 
     client = OpenAI(base_url=API_BASE_URL, api_key=API_KEY)
 
-    env_client = MeetingEnv(base_url=ENV_BASE_URL).sync()
-
     results = []
     start_time = time.time()
 
     connected = False
     max_retries = 10
+    env_client = None
     
     # Retry logic for initial connection (Phase 2 env startup delay)
     for attempt in range(max_retries):
         try:
+            env_client = MeetingEnv(base_url=ENV_BASE_URL).sync()
             with env_client:
                 connected = True
                 for task_id in TASK_IDS:
