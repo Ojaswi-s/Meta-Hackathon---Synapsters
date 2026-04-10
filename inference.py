@@ -246,10 +246,31 @@ def main():
     results = []
     start_time = time.time()
 
-    with env_client:
-        for task_id in TASK_IDS:
-            task_result = run_task(client, env_client, task_id)
-            results.append(task_result)
+    connected = False
+    max_retries = 10
+    
+    # Retry logic for initial connection (Phase 2 env startup delay)
+    for attempt in range(max_retries):
+        try:
+            with env_client:
+                connected = True
+                for task_id in TASK_IDS:
+                    try:
+                        task_result = run_task(client, env_client, task_id)
+                        results.append(task_result)
+                    except Exception as e:
+                        print(f"  [ERROR] Task {task_id} raised exception: {e}")
+                break  # Successful execution, break retry loop
+        except Exception as e:
+            print(f"[Attempt {attempt + 1}/{max_retries}] Exception during env connection/execution: {e}")
+            if attempt < max_retries - 1:
+                time.sleep(3)
+            else:
+                print("Max retries reached. Could not complete execution.")
+
+    if not connected:
+        print("Exiting gracefully due to connection failure.")
+        return {"error": "Failed to connect to environment server"}
 
     elapsed = time.time() - start_time
 
