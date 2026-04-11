@@ -37,9 +37,9 @@ MODEL_NAME = os.environ.get("MODEL_NAME", "meta-llama/Llama-3.3-70B-Instruct")
 ENV_BASE_URL = os.environ.get("ENV_BASE_URL", "http://localhost:7860")
 
 # ── Inference config ──────────────────────────────────────────────────────────
-MAX_STEPS = 3          # Max refinement steps per task
-TEMPERATURE = 0.1      # Low temperature for deterministic extraction
-MAX_TOKENS = 1200
+MAX_STEPS = 5          # Synced with environment (agent gets up to 5 attempts to refine based on feedback)
+TEMPERATURE = 0.2      # Slight temperature to prevent deterministic loops during refinement
+MAX_TOKENS = 2000      # Expanded to handle detailed Chain of Thought reasoning
 
 TASK_IDS = ["easy", "medium", "hard"]
 
@@ -49,12 +49,13 @@ action items from meeting transcripts.
 
 For each action item you must identify:
 - owner: the person responsible (use their first name or role)
-- task: a clear, specific description of what they will do
+- task: a concise description of what they will do, using the EXACT keywords spoken in the transcript where possible
 - deadline: when it's due (null if not mentioned)
 - priority: "high", "medium", or "low"
 
-You MUST respond with ONLY a valid JSON object in this exact format:
+You MUST respond with ONLY a valid JSON object in this exact format. You must output the "reasoning" key FIRST so you can think step-by-step before making your final list:
 {
+  "reasoning": "First, evaluate the transcript step-by-step. Identify tasks, resolve assignment conflicts, and pinpoint deadlines.",
   "action_items": [
     {
       "owner": "string",
@@ -63,16 +64,17 @@ You MUST respond with ONLY a valid JSON object in this exact format:
       "priority": "high|medium|low"
     }
   ],
-  "is_final": true,
-  "reasoning": "brief explanation of your extraction decisions"
+  "is_final": true
 }
 
 Rules:
-- Include EVERY action item, even implicit ones
-- If two people discuss taking the same task, assign it to whoever accepted it LAST
-- Do not invent action items that aren't in the transcript
-- is_final should be true on your last attempt
-- Respond with JSON only — no markdown, no preamble
+- Include EVERY action item, even implicit ones ("we should", "someone needs to").
+- If responsibility changes, assign it to whoever accepted it LAST.
+- If an existing task is reassigned mid-meeting, discard the old owner.
+- DO NOT invent action items that aren't in the transcript.
+- Use explicit terminology and acronyms exactly as found in the transcript.
+- is_final should be true on your last attempt.
+- Respond with JSON only — no markdown, no preamble.
 """
 
 
@@ -116,13 +118,11 @@ MEETING TRANSCRIPT:
 
     raw = response.choices[0].message.content or "{}"
 
-    # Strip markdown code fences if present
-    raw = raw.strip()
-    if raw.startswith("```"):
-        raw = raw.split("```")[1]
-        if raw.startswith("json"):
-            raw = raw[4:]
-        raw = raw.strip()
+    # Indestructible JSON parser: extract from first { to last }
+    start_idx = raw.find('{')
+    end_idx = raw.rfind('}')
+    if start_idx != -1 and end_idx != -1:
+        raw = raw[start_idx:end_idx + 1]
 
     try:
         parsed = json.loads(raw)
