@@ -142,12 +142,12 @@ No semantic similarity, no LLM judges. Same input → same score, every run.
 
 Run with `meta-llama/Llama-3.3-70B-Instruct` via HuggingFace router (temperature=0.0, MAX_STEPS=5):
 
-| Task   | Best F1  | Total Reward |
-|--------|----------|--------------|
-| Easy   | 0.8964   | 2.8981       |
-| Medium | 0.7622   | 2.4553       |
-| Hard   | 0.7263   | 2.3368       |
-| **Avg**| **0.7950**| **7.6902**  |
+| Task   | Best F1  | Total Reward | Steps |
+|--------|----------|--------------|-------|
+| Easy   | 0.8684   | 1.4733       | 2     |
+| Medium | 0.8822   | 2.0175       | 3     |
+| Hard   | 0.8843   | 1.4996       | 2     |
+| **Avg**| **0.8783**| **4.9904** | —     |
 
 ---
 
