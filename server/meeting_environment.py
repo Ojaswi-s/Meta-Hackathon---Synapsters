@@ -121,8 +121,10 @@ class MeetingEnvironment(Environment):
 
         # Reward signal: score + improvement bonus - step cost
         step_cost = 0.02  # Small penalty per step to encourage efficiency
-        reward = round(score + (improvement * 0.3) - step_cost, 4)
-        reward = max(0.0, min(1.5, reward))  # Clamp to reasonable range
+        raw_reward = score + (improvement * 0.3) - step_cost
+        
+        # Normalize the raw reward into [0.0, 1.0] by dividing by theoretical max (~1.3)
+        reward = round(max(0.0, min(1.0, raw_reward / 1.3)), 4)
 
         self._state.cumulative_reward += reward
         self._last_reward = reward

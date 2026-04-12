@@ -72,8 +72,9 @@ observation_space:
 
 reward:
   type: continuous
-  range: [0.0, 1.5]
+  range: [0.0, 1.0]
   description: >
     Blend of average item quality score (70%) and F1 over ground truth set (30%),
     plus an improvement bonus for beating the previous best score,
     minus a small step cost to encourage efficient extraction.
+    Raw reward is normalized to [0.0, 1.0] by dividing by the theoretical maximum (~1.3).

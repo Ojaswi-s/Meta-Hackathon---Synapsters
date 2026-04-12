@@ -105,11 +105,13 @@ grader_score = 0.7 × avg_item_score + 0.3 × F1
 
 **Stage 2 — Step reward** (`meeting_environment.py`):
 ```
-reward = grader_score + (0.3 × improvement_delta) - 0.02 × step_cost
+raw_reward = grader_score + (0.3 × improvement_delta) - 0.02 × step_cost
+reward = clamp(raw_reward / 1.3, 0.0, 1.0)
 ```
 
 Where `improvement_delta` is the gain over the best previous score (`max(0, score − best_f1_so_far)`),
-and `step_cost` = 0.02 (a small efficiency penalty per step). Final reward is clamped to `[0.0, 1.5]`.
+and `step_cost` = 0.02 (a small efficiency penalty per step). Raw reward is normalized by the theoretical
+maximum (~1.3) and clamped to `[0.0, 1.0]` per OpenEnv spec.
 
 `avg_item_score` for each matched item is:
 - **40%** task keyword overlap
@@ -138,14 +140,14 @@ No semantic similarity, no LLM judges. Same input → same score, every run.
 
 ## Baseline Scores
 
-Run with `meta-llama/Llama-3.3-70B-Instruct` via HuggingFace router:
+Run with `meta-llama/Llama-3.3-70B-Instruct` via HuggingFace router (temperature=0.0, MAX_STEPS=5):
 
-| Task   | Best F1 | Total Reward |
-|--------|---------|--------------|
-| Easy   | 0.88    | 1.21         |
-| Medium | 0.67    | 0.89         |
-| Hard   | 0.41    | 0.52         |
-| **Avg**| **0.65**| **0.87**     |
+| Task   | Best F1  | Total Reward |
+|--------|----------|--------------|
+| Easy   | 0.8964   | 2.8981       |
+| Medium | 0.7622   | 2.4553       |
+| Hard   | 0.7263   | 2.3368       |
+| **Avg**| **0.7950**| **7.6902**  |
 
 ---
 
@@ -158,7 +160,7 @@ Run with `meta-llama/Llama-3.3-70B-Instruct` via HuggingFace router:
 pip install -e .
 
 # Run server
-uvicorn meeting_env.server.app:app --host 0.0.0.0 --port 8000
+uvicorn server.app:app --host 0.0.0.0 --port 7860
 
 # Run baseline
 export API_BASE_URL=https://router.huggingface.co/v1
@@ -198,22 +200,20 @@ openenv validate
 
 ```
 .
-├── Dockerfile                   # Container build (root-level)
+├── Dockerfile                   # Container build (python:3.11-slim, port 7860)
 ├── requirements.txt             # Python dependencies
 ├── pyproject.toml               # Package config (pip install -e .)
 ├── openenv.yaml                 # OpenEnv manifest
 ├── inference.py                 # Baseline inference script (OpenAI client)
 ├── README.md                    # This file
-├── meeting_env/                 # Python package
-│   ├── __init__.py              # Exports MeetingAction, MeetingObservation, MeetingEnv
-│   ├── models.py                # Pydantic models: Action, Observation, State
-│   ├── client.py                # Typed EnvClient (sync + async)
-│   └── server/
-│       ├── __init__.py
-│       ├── app.py               # FastAPI server via create_fastapi_app
-│       ├── meeting_environment.py  # Environment logic (step/reset/state)
-│       ├── tasks.py             # 3 task definitions with transcripts + ground truth
-│       └── grader.py            # Deterministic F1-based grader
-└── tests/
+└── server/                      # Python package (PYTHONPATH=/app in Docker)
+    ├── __init__.py              # Exports MeetingAction, MeetingObservation, MeetingEnv
+    ├── app.py                   # FastAPI server via create_fastapi_app
+    ├── models.py                # Pydantic models: Action, Observation, State
+    ├── client.py                # Typed EnvClient (sync + async)
+    ├── meeting_environment.py   # Environment logic (step/reset/state)
+    ├── tasks.py                 # 3 task definitions with transcripts + ground truth
+    └── grader.py                # Deterministic F1-based grader
+tests/
     └── test_meeting_env.py      # Unit + integration tests (pytest)
 ```

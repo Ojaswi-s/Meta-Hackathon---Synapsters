@@ -38,7 +38,7 @@ ENV_BASE_URL = os.environ.get("ENV_BASE_URL", "http://localhost:7860")
 
 # ── Inference config ──────────────────────────────────────────────────────────
 MAX_STEPS = 5          # Synced with environment (agent gets up to 5 attempts to refine based on feedback)
-TEMPERATURE = 0.2      # Slight temperature to prevent deterministic loops during refinement
+TEMPERATURE = 0.0      # Deterministic output for reproducible baseline scores
 MAX_TOKENS = 2000      # Expanded to handle detailed Chain of Thought reasoning
 
 TASK_IDS = ["easy", "medium", "hard"]
